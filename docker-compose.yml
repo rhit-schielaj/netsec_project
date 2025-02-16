@@ -1,0 +1,117 @@
+# set the name for the project
+name: template
+
+services:
+  hostA:
+    # Specify which image should this container use.
+    # You can use whichever images you like, be sure to adapt your
+    # configuration to the images that you select
+    image: netsos/rhit-netsec:latest
+    # The name of the container that will show up in `docker compose ps`
+    container_name: hostA
+    # The hostname for this container - will be used in configuring it.
+    # This is the hostname that will be used for this container in dns lookups
+    # as well as what will be returned to the command hostname.
+    hostname: hostA
+    # Should this container occupy a tty?
+    tty: true
+    # The starting working directory for this container.
+    # Omitting this will always start at $HOME.
+    working_dir: /volumes/
+    # Specify the capabilities that this container should have.
+    #  For specifically these labs, ALL is good. But you'd want to be more
+    #  conservative when dealing with other containers.
+    cap_add:
+      - ALL
+    # This property specifies which files from your LOCAL directory will be
+    # mounted in the container. The container by default will have both read
+    # and write access to this mounted directory.
+    volumes:
+      - ./volumes:/volumes
+    # Which networks do you want to hook this container up to.
+    # By default, interfaces start from `eth0`.
+    networks:
+      # This network must be defined in the networks property below!
+      local-net:
+        # Specifiy a static IPv4 address for this container on this network.
+        ipv4_address: 10.10.0.4
+    # This command contains everything that should be executed once the
+    # container is about to be launched.
+    #
+    # WARNING: A failure here means that your container will not continue to
+    # live, it will be automatic terminated.
+    #
+    # To see logs from these commands, use the `dcl` alias
+    command: >
+      bash -c "
+      groupadd -g ${GID} netsec_group &&
+      useradd -m -u ${UID} -g netsec_group -s /bin/bash netsec &&
+      echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+      bash /volumes/check_config.sh &&
+      cp /volumes/vimrc /home/netsec/.vimrc &&
+      tail -f /dev/null
+      "
+    #
+    # OTHER PROPERTIES
+    #
+    # extra_hosts:
+    #   Add any additional host to IP mapping you want to use in your container
+    #   For example:
+    #     server: "10.10.1.5"
+    #
+    # sysctls:
+    #   Any system control configuration goes here. This can edit some of the
+    #   thing you can change using systemctl
+
+  hostB:
+    image: netsos/rhit-netsec:latest
+    container_name: hostB
+    hostname: hostB
+    tty: true
+    working_dir: /volumes/
+    cap_add:
+      - ALL
+    volumes:
+      - ./volumes:/volumes
+    networks:
+      local-net:
+        ipv4_address: 10.10.0.5
+    command: >
+      bash -c "
+      groupadd -g ${GID} netsec_group &&
+      useradd -m -u ${UID} -g netsec_group -s /bin/bash netsec &&
+      echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+      bash /volumes/check_config.sh &&
+      cp /volumes/vimrc /home/netsec/.vimrc &&
+      tail -f /dev/null
+      "
+
+  attacker:
+    image: netsos/rhit-netsec:latest
+    container_name: attacker
+    hostname: attacker
+    working_dir: /volumes/
+    tty: true
+    cap_add:
+      - ALL
+    volumes:
+      - ./volumes:/volumes
+    networks:
+      local-net:
+        ipv4_address: 10.10.0.13
+    command: >
+      bash -c "
+      groupadd -g ${GID} netsec_group &&
+      useradd -m -u ${UID} -g netsec_group -s /bin/bash netsec &&
+      echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+      bash /volumes/check_config.sh &&
+      cp /volumes/vimrc /home/netsec/.vimrc &&
+      tail -f /dev/null
+      "
+
+networks:
+  local-net:
+    name: local-net
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
