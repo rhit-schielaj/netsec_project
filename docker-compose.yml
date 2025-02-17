@@ -50,15 +50,43 @@ services:
         ipv4_address: 10.10.0.10
       subnet2:
         ipv4_address: 10.10.1.10
+      subnet3:
+        ipv4_address: 10.10.2.10
     command: >
       bash -c "
-      groupadd -g ${GID} netsec_group &&
-      useradd -m -u ${UID} -g netsec_group -s /bin/bash netsec &&
+      groupadd netsec_group &&
+      useradd -m -g netsec_group -s /bin/bash netsec &&
       echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
       bash /volumes/check_config.sh &&
+      nft -f /volumes/firewall.nft &&
       cp /volumes/vimrc /home/netsec/.vimrc &&
       tail -f /dev/null
       "
+
+  honeypot:
+    image: cowrie/cowrie
+    container_name: honeypot
+    hostname: honeypot
+    tty: true
+    cap_add:
+      - ALL
+    volumes:
+      - ./volumes/:/volumes
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      subnet3:
+        ipv4_address: 10.10.2.20
+    # command: >
+    #   bash -c "
+    #   groupadd netsec_group &&
+    #   useradd -m -g netsec_group -s /bin/bash netsec &&
+    #   echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+    #   bash /volumes/check_config.sh &&
+    #   nft -f /volumes/firewall.nft &&
+    #   cp /volumes/vimrc /home/netsec/.vimrc &&
+    #   tail -f /dev/null
+    #   "
 
   server:
     image: netsos/rhit-netsec:fw
@@ -99,3 +127,8 @@ networks:
     ipam:
       config:
         - subnet: 10.10.1.0/24
+  subnet3:
+    name: subnet3
+    ipam:
+      config:
+        - subnet: 10.10.2.0/24

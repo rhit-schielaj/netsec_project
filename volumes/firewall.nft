@@ -5,4 +5,5 @@ add table ip netsec_tbl
 add chain netsec_tbl netsec_forward { type filter hook forward priority 0 ; policy drop ; }
 
 
-add rule netsec_tbl netsec_forward ip tcp dport {ssh} accept
+add rule netsec_tbl netsec_forward tcp dport {ssh} accept;
+add rule netsec_tbl netsec_forward tcp sport {ssh} accept;
