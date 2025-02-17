@@ -23,6 +23,7 @@ services:
       useradd -m -u ${UID} -g netsec_group -s /bin/bash netsec &&
       echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
       bash /volumes/check_config.sh &&
+      bash /volumes/configure_server.sh &&
       cp /volumes/vimrc /home/netsec/.vimrc &&
       apt update &&
       apt install -y hydra &&
@@ -81,6 +82,7 @@ services:
       echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
       bash /volumes/check_config.sh &&
       bash /volumes/setup_telnetd.sh &&
+      bash /volumes/configure_server.sh &&
       cp /volumes/vimrc /home/netsec/.vimrc &&
       ip route add 10.10.0.0/24 dev eth0 via 10.10.1.10 &&
       tail -f /dev/null
