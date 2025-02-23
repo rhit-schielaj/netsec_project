@@ -7,7 +7,7 @@ to get a lab off the ground is included here. These files are:
    gid and save them in an `.env` file that docker compose can read.
 
 2. `docker-compose.yml`: A generic docker compose file with three containers:
-   `hostA`, `hostB`, and an attacker.
+   `client`, `server`, `firewall`, and `honeypot`.
 
    These containers will use the latest version of the netsos container. All
    three are on the same subnet on 10.10.0.0/24
@@ -20,6 +20,6 @@ to get a lab off the ground is included here. These files are:
 <!--
 CHANGELOG:
 
-- 2024-12-06 v0.1: File created and default options included.
+- 2025-2-20 v0.2: File created and default options included.
 
 -->

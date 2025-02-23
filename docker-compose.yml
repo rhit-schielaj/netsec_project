@@ -17,6 +17,7 @@ services:
         ipv4_address: 10.10.0.4
     extra_hosts:
       server: "10.10.1.5"
+      honeypot: "10.10.2.20"
     command: >
       bash -c "
       groupadd -g ${GID} netsec_group &&
@@ -45,6 +46,10 @@ services:
       - ./volumes/:/volumes
     sysctls:
       - net.ipv4.ip_forward=1
+    extra_hosts:
+      server: "10.10.1.5"
+      # honeypot: "10.10.2.20"
+      client: "10.10.0.4"
     networks:
       subnet1:
         ipv4_address: 10.10.0.10
@@ -64,16 +69,15 @@ services:
       "
 
   honeypot:
-    image: cowrie/cowrie
+    # image: python:3.12
     container_name: honeypot
     hostname: honeypot
+    build: ./honey
     tty: true
     cap_add:
       - ALL
     volumes:
-      - ./volumes/:/volumes
-    sysctls:
-      - net.ipv4.ip_forward=1
+      - ./honey/:/honey
     networks:
       subnet3:
         ipv4_address: 10.10.2.20
@@ -81,7 +85,7 @@ services:
     #   bash -c "
     #   groupadd netsec_group &&
     #   useradd -m -g netsec_group -s /bin/bash netsec &&
-    #   echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+    #   echo 'netsec ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers "
     #   bash /volumes/check_config.sh &&
     #   nft -f /volumes/firewall.nft &&
     #   cp /volumes/vimrc /home/netsec/.vimrc &&

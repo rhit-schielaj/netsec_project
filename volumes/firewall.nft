@@ -1,10 +1,31 @@
 #!/usr/sbin/nft -f
 
-add table ip netsec_tbl
+table ip netsec_tbl{
+    chain netsec_forward {
+        type filter hook forward priority 0 ; policy drop ;
 
-add chain netsec_tbl netsec_forward { type filter hook forward priority 0 ; policy drop ; }
-add chain netsec_tbl netsec_input { type filter hook input priority 0 ; policy drop ; }
+        tcp dport {ssh} ct state established,related accept;
+        tcp flags syn tcp dport 22 meter toomanyestablished { ip saddr ct count over 3 } reject with tcp reset
+        #tcp dport {ssh} limit rate 5/minute counter log prefix "ssh.flood: " drop
+        #tcp dport {ssh} counter log prefix "ssh.attempt: " accept
 
 
-add rule netsec_tbl netsec_forward tcp dport {ssh} accept;
-add rule netsec_tbl netsec_forward tcp sport {ssh} accept;
+        ip protocol tcp tcp dport {ssh, 2222} accept;
+        ip protocol tcp tcp sport {ssh, 2222} accept;
+    }
+
+    chain netsec_input{
+        type filter hook input priority 0 ; policy drop ;
+    }
+
+}
+
+#add table ip netsec_tbl
+
+#add chain netsec_tbl netsec_forward { type filter hook forward priority 0 ; policy drop ; }
+#add chain netsec_tbl netsec_input { type filter hook input priority 0 ; policy drop ; }
+
+
+#add rule netsec_tbl netsec_forward tcp dport {ssh, 2222} accept;
+#add rule netsec_tbl netsec_forward tcp sport {ssh, 2222} accept;
+#tcp flags syn tcp dport 22 meter toomanyestablished { ip saddr ct count over 3 } reject with tcp reset

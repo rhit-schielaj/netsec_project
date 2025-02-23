@@ -1,0 +1,4 @@
+% nft add table nat
+% nft 'add chain nat postrouting { type nat hook postrouting priority 100 ; }'
+% nft add rule nat postrouting ip saddr 192.168.1.0/24 oif eth0 snat to 1.2.3.4
+% nft 'add rule nat prerouting iif eth0 tcp dport { 80, 443 } dnat to 192.168.1.120'
